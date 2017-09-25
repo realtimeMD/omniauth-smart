@@ -91,8 +91,11 @@ module OmniAuth
         @smart_service_uri = @client.issuer
 
         # the id_token is a JWT with the parameters specific in the SMART spec
-        # this data is in the first hash, (the second hash should contain the JWT algorithm)
-        @id_data = JWT.decode(token_response_json["id_token"], nil, false)[0]
+        # id_data data is in the first item, (the second item should contain the JWT algorithm)
+        # See http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+        # Also http://fhir.cerner.com/authorization/openid-connect/
+        # Since we have communicated directly with the token server to obtain this token, we will consider this a trusted token and only confirm the audience to be our client_id
+        @id_data = JWT.decode(token_response_json["id_token"], nil, false, aud: @client.client_id, verify_aud: true)[0]
 
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]
@@ -135,6 +138,8 @@ module OmniAuth
       end
 
       def smart_url_for(client)
+        # Please note here we use our whitelisted client.issuer to
+        # get the conformance statement
         conformance = SmartConformance::get_conformance_from_server(client.issuer)
         scope_requested = client.scope || options[:default_scope]
         smart_session.launching(client, conformance, scope_requested)
@@ -150,12 +155,12 @@ module OmniAuth
       end
 
       def launch_context_id
-        request.params["launch"]
+        request.params["launch"].to_s
       end
 
       # SMART protocol requires submitting the url with encoded parameters
       def url_with_encoded_params(uri, params)
-        "#{uri}?#{URI.encode_www_form(params)}"
+        "#{URI.escape(uri)}?#{URI.encode_www_form(params)}"
       end
 
       def redirect_uri
