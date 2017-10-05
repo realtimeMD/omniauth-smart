@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This manages all of the smart information that is persisted in the session hash from the omniauth strategy
 # Example:
 # #<OmniAuth::AuthHash
@@ -30,38 +32,38 @@ class OmniauthSmartHash
   end
 
   def scope_granted
-    extra['scope_granted']
+    extra["scope_granted"]
   end
 
   def style_url
-    extra['style_url']
+    extra["style_url"]
   end
 
   def org_id
-    extra['org_id']
+    extra["org_id"]
   end
 
   def patient_id
-    extra['patient_id']
+    extra["patient_id"]
   end
 
   def fhir_uri
-    extra['fhir_uri']
+    extra["fhir_uri"]
   end
 
   def token
     raise KeyError.new("Missing token in omniauth.auth.credentials") unless credentials.has_key?("token")
-    credentials['token']
+    credentials["token"]
   end
 
   def expires
-    credentials['expires']
+    credentials["expires"]
   end
 
   # this returns a unix timestamp
   # to convert to DateTime use Time.at(expires_at)
   def expires_at
-    credentials['expires_at']
+    credentials["expires_at"]
   end
 
   def extra

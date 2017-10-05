@@ -1,9 +1,10 @@
-require 'faraday'
-require 'multi_json'
+# frozen_string_literal: true
+
+require "faraday"
+require "multi_json"
 
 # Knows how to communicate with the SMART authorization server
 class SmartAuthorization
-
   def initialize(token_url)
     @token_url = token_url
   end
@@ -11,7 +12,7 @@ class SmartAuthorization
   def exchange_code_for_token(client, code, redirect_uri)
     data = {
         code: code,
-        grant_type: 'authorization_code',
+        grant_type: "authorization_code",
         redirect_uri: redirect_uri
     }
     if client.is_public?

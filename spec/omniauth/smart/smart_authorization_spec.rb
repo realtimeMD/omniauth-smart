@@ -1,10 +1,12 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require "spec_helper"
 
 RSpec.describe SmartAuthorization do
   def stub_authorization
     stub_request(:post, "http://my-server.org/token").to_return(
-        headers: {'Content-Type': 'application/json'},
-        body: "{ \"some\": \"json\" }"
+      headers: { 'Content-Type': "application/json" },
+      body: "{ \"some\": \"json\" }"
     )
   end
 
@@ -12,7 +14,7 @@ RSpec.describe SmartAuthorization do
     stub_authorization
     smart = SmartAuthorization.new("http://my-server.org/token")
     result = smart.exchange_code_for_token(
-             OmniauthSmartClient.new(client_id: "CLIENT", client_secret: "SECRET"),
+      OmniauthSmartClient.new(client_id: "CLIENT", client_secret: "SECRET"),
              "code",
              "http://my-server.org/redirect"
     )

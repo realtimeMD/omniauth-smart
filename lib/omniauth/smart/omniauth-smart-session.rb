@@ -1,8 +1,9 @@
-require 'securerandom'
+# frozen_string_literal: true
+
+require "securerandom"
 
 # This keeps track of the smart session information
 class OmniauthSmartSession
-
   STATUS_LAUNCHING = "launching".freeze
   STATUS_LAUNCHED = "launched".freeze
 
@@ -79,19 +80,18 @@ class OmniauthSmartSession
   # returns true iff is the correct state id, and status is LAUNCHING_STATUS
   def is_launching?(request_state)
     if request_state != state_id
-      return {result: false, error: "An error occurred. Invalid state id"}
+      return { result: false, error: "An error occurred. Invalid state id" }
     end
 
     # is it in the correct state which MUST be launching
     if status != STATUS_LAUNCHING
-      return {result: false, error: "An error occurred. Invalid status (#{status})" +
-               "This can occur if you inadvertently refreshed the page. Try to launch it again"}
+      return { result: false, error: "An error occurred. Invalid status (#{status})" +
+               "This can occur if you inadvertently refreshed the page. Try to launch it again" }
     end
-    return {result: true, error: nil}
+    return { result: true, error: nil }
   end
 
   def launched
     self.status = STATUS_LAUNCHED
   end
-
 end

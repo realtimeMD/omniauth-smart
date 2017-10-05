@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 # This backend lists the allowed clients that can be launched via the SMART launcher
 # It is designed to allow this to be loaded from an appropriately formed ActiveRecord Model, or a yaml file
 
 class OmniauthSmartBackend
-
   class AbstractMethodError < Exception; end;
 
   # Returns an OmniauthSmartClient if found, otherwise nil
@@ -18,6 +19,6 @@ class OmniauthSmartBackendArray < OmniauthSmartBackend
   end
 
   def find_by_issuer(issuer)
-    @clients.find {|client| client.issuer == issuer}
+    @clients.find { |client| client.issuer == issuer }
   end
 end

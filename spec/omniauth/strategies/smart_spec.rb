@@ -1,15 +1,17 @@
-require 'spec_helper'
-require 'rack/test'
-require 'jwt'
-require 'multi_json'
-require 'sinatra'
+# frozen_string_literal: true
+
+require "spec_helper"
+require "rack/test"
+require "jwt"
+require "multi_json"
+require "sinatra"
 
 A_CLIENT_ISSUER = "http://smart.org/123"
 NOT_A_CLIENT_ISSUER = "notme"
 
 CONFORMANCE = <<END_TEXT
 {
-  "resourceType": "Conformance", 
+  "resourceType": "Conformance",
   "rest": [{
       "security": {
         "service": [
@@ -58,13 +60,13 @@ describe OmniAuth::Strategies::Smart do
     end
   end
 
-  let(:client_id) {'CLIENT_ID'}
-  let(:client_secret) {'CLIENT_SECRET'}
-  let(:org_id) {'ORG_ID'}
+  let(:client_id) { "CLIENT_ID" }
+  let(:client_secret) { "CLIENT_SECRET" }
+  let(:org_id) { "ORG_ID" }
   let(:backend) { OmniauthSmartBackendArray.new([OmniauthSmartClient.new(issuer: A_CLIENT_ISSUER, client_id: client_id, client_secret: client_secret, org_id: org_id)]) }
   let(:application) do
     lambda do
-      [200, {}, ['Hello.']]
+      [200, {}, ["Hello."]]
     end
   end
   let(:smart) do
@@ -72,16 +74,16 @@ describe OmniAuth::Strategies::Smart do
   end
 
   describe "options" do
-    let(:subject) {smart.options}
-    it 'has a backend' do
+    let(:subject) { smart.options }
+    it "has a backend" do
       expect(subject[:backend]).to_not be_nil
     end
 
-    it 'has a default scope' do
+    it "has a default scope" do
       expect(subject[:default_scope]).to match /patient/i
     end
 
-    it 'can override default scope' do
+    it "can override default scope" do
       smart_with_new_scope = OmniAuth::Strategies::Smart.new(application, default_scope: "NEW SCOPE")
       expect(smart_with_new_scope.options[:default_scope]).to eq "NEW SCOPE"
     end
@@ -91,27 +93,27 @@ describe OmniAuth::Strategies::Smart do
 
     def stub_launch
       stub_request(:get, "#{A_CLIENT_ISSUER}/metadata").to_return(
-          headers: {'Content-Type': 'application/json'},
-          body: CONFORMANCE
+        headers: { 'Content-Type': "application/json" },
+        body: CONFORMANCE
       )
     end
 
     context "launch" do
-      it 'errors if there is no issuer' do
-        get '/auth/smart'
+      it "errors if there is no issuer" do
+        get "/auth/smart"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /failure/
         expect(last_response.location).to match /Unknown issuer/i
       end
 
-      it 'errors if the issuer is not in allowed_clients' do
+      it "errors if the issuer is not in allowed_clients" do
         get "/auth/smart?iss=#{NOT_A_CLIENT_ISSUER}"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /failure/
         expect(last_response.location).to match /Unknown issuer/i
       end
 
-      it 'redirects to emr authentication server' do
+      it "redirects to emr authentication server" do
         stub_launch
         get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
         expect(last_response.status).to eq(302)
@@ -120,15 +122,15 @@ describe OmniAuth::Strategies::Smart do
     end
 
     def get_jwt_token
-      exp = (Time.now.to_i + 4*3600)
+      exp = (Time.now.to_i + 4 * 3600)
       id_token = { sub: "SUBJECT", aud: "AUDIENCE", exp: exp, iat: Time.now.to_i }
-      JWT.encode(id_token,nil,'none')
+      JWT.encode(id_token, nil, "none")
     end
 
     def stub_authorization
       stub_request(:post, "http://my-server.org/token").to_return(
-          headers: {'Content-Type': 'application/json'},
-          body: <<END_TEXT
+        headers: { 'Content-Type': "application/json" },
+        body: <<END_TEXT
 {
   "scope": "patient/*.read patient/Patient.read launch openid profile online_scope",
   "access_token": "ACCESS TOKEN",
@@ -142,7 +144,7 @@ END_TEXT
     end
 
     context "callback" do
-      it 'requests a token' do
+      it "requests a token" do
         stub_launch
         stub_authorization
         get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"

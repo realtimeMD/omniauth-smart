@@ -1,14 +1,15 @@
-require 'omniauth'
-require 'jwt'
-require 'omniauth/smart/omniauth-smart-backend'
-require 'omniauth/smart/omniauth-smart-client'
-require 'omniauth/smart/omniauth-smart-session'
-require 'omniauth/smart/smart-conformance'
-require 'omniauth/smart/smart-authorization'
+# frozen_string_literal: true
+
+require "omniauth"
+require "jwt"
+require "omniauth/smart/omniauth-smart-backend"
+require "omniauth/smart/omniauth-smart-client"
+require "omniauth/smart/omniauth-smart-session"
+require "omniauth/smart/smart-conformance"
+require "omniauth/smart/smart-authorization"
 
 module OmniAuth
   module Strategies
-
     # Smart strategy for launching and processing SMART launches from https://smarthealthit.org
     #
     # When the EMR launches direct it to /auth/smart
@@ -53,7 +54,7 @@ module OmniAuth
         else
           client = options[:backend].find_by_issuer(issuer)
           if client
-              redirect smart_url_for(client)
+            redirect smart_url_for(client)
           else
             log :error, "Unknown issuer #{issuer}"
             fail! "Unknown issuer."
@@ -104,14 +105,14 @@ module OmniAuth
       end
 
       uid do
-        @id_data['sub']
+        @id_data["sub"]
       end
 
       credentials do
         {
-            :token => @smart_access_token,
-            :expires => true,
-            :expires_at => @id_data["iat"]
+            token: @smart_access_token,
+            expires: true,
+            expires_at: @id_data["iat"]
         }
       end
 
@@ -128,64 +129,62 @@ module OmniAuth
 
       private
 
-      def smart_session
-        @smart_session = @smart_session || OmniauthSmartSession.new(session)
-      end
-
-      def has_backend?
-        fail! "No backend defined!" unless options[:backend]
-        options[:backend]
-      end
-
-      def smart_url_for(client)
-        # Please note here we use our whitelisted client.issuer to
-        # get the conformance statement
-        conformance = SmartConformance::get_conformance_from_server(client.issuer)
-        scope_requested = client.scope || options[:default_scope]
-        smart_session.launching(client, conformance, scope_requested)
-        url_with_encoded_params(conformance.authorize_url, {
-            response_type: "code",
-            client_id: client.client_id,
-            scope: scope_requested,
-            redirect_uri: redirect_uri,
-            aud: client.issuer,
-            launch: launch_context_id,
-            state: smart_session.state_id
-        })
-      end
-
-      def launch_context_id
-        request.params["launch"].to_s
-      end
-
-      # SMART protocol requires submitting the url with encoded parameters
-      def url_with_encoded_params(uri, params)
-        "#{URI.escape(uri)}?#{URI.encode_www_form(params)}"
-      end
-
-      def redirect_uri
-        full_host + script_name + callback_path
-      end
-
-      def no_callback_errors?
-        if request.params["error"]
-          log :error, "Error from smart server: #{request.params['error_description']}"
-          fail! "An error occurred: #{request.params['error_description']}"
-          return false
+        def smart_session
+          @smart_session = @smart_session || OmniauthSmartSession.new(session)
         end
-        return true
-      end
 
-      def state_is_correct?
-        result = smart_session.is_launching?(request.params["state"])
-        if result[:result]
-          smart_session.launched
+        def has_backend?
+          fail! "No backend defined!" unless options[:backend]
+          options[:backend]
+        end
+
+        def smart_url_for(client)
+          # Please note here we use our whitelisted client.issuer to
+          # get the conformance statement
+          conformance = SmartConformance::get_conformance_from_server(client.issuer)
+          scope_requested = client.scope || options[:default_scope]
+          smart_session.launching(client, conformance, scope_requested)
+          url_with_encoded_params(conformance.authorize_url,             response_type: "code",
+              client_id: client.client_id,
+              scope: scope_requested,
+              redirect_uri: redirect_uri,
+              aud: client.issuer,
+              launch: launch_context_id,
+              state: smart_session.state_id)
+        end
+
+        def launch_context_id
+          request.params["launch"].to_s
+        end
+
+        # SMART protocol requires submitting the url with encoded parameters
+        def url_with_encoded_params(uri, params)
+          "#{URI.escape(uri)}?#{URI.encode_www_form(params)}"
+        end
+
+        def redirect_uri
+          full_host + script_name + callback_path
+        end
+
+        def no_callback_errors?
+          if request.params["error"]
+            log :error, "Error from smart server: #{request.params['error_description']}"
+            fail! "An error occurred: #{request.params['error_description']}"
+            return false
+          end
           return true
-        else
-          fail! result[:error]
-          return false
         end
-      end
+
+        def state_is_correct?
+          result = smart_session.is_launching?(request.params["state"])
+          if result[:result]
+            smart_session.launched
+            return true
+          else
+            fail! result[:error]
+            return false
+          end
+        end
     end
   end
 end

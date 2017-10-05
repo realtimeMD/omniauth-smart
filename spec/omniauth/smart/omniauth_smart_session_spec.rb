@@ -1,11 +1,13 @@
-require 'spec_helper'
-require 'ostruct'
+# frozen_string_literal: true
+
+require "spec_helper"
+require "ostruct"
 
 RSpec.describe OmniauthSmartSession do
   it "can launch" do
     fake_session = {}
     smart_session = OmniauthSmartSession.new(fake_session)
-    conformance = OpenStruct.new({authorize_url: "authorize", token_url: "token"})
+    conformance = OpenStruct.new(authorize_url: "authorize", token_url: "token")
     client = OmniauthSmartClient.new(issuer: "hello/world")
     smart_session.launching(client, conformance, "yes/please")
     expect(smart_session.state_id).to_not be_nil

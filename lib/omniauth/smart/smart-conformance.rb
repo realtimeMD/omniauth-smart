@@ -1,5 +1,7 @@
-require 'faraday'
-require 'multi_json'
+# frozen_string_literal: true
+
+require "faraday"
+require "multi_json"
 
 class SmartConformanceError < StandardError; end;
 
@@ -39,9 +41,9 @@ class SmartConformance
     raise SmartConformanceError.new("Unknown security extension: #{result}") unless is_known_security_extension?(@security_extension)
 
     @security_extension["extension"].each do |url_uri|
-      if url_uri["url"]=="authorize"
+      if url_uri["url"] == "authorize"
         @authorize_url = url_uri["valueUri"]
-      elsif url_uri["url"]=="token"
+      elsif url_uri["url"] == "token"
         @token_url = url_uri["valueUri"]
       end
     end

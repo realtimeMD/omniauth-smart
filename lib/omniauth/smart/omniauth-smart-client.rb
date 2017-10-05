@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # OmniauthSmart Client attributes
 # Required: issuer, client_id
 # Optional but recommended: client_secret
