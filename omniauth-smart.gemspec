@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "sinatra", "~> 2"
   gem.add_development_dependency "rubocop", "~> 0.50.0"
   gem.add_development_dependency "rubocop-rails", "~> 1.1.0"
+  gem.add_development_dependency "bundler-audit", "~> 0.6.0"
 
   gem.name          = "omniauth-smart"
   gem.version       = OmniAuth::Smart::VERSION
