@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe SmartAuthorization do
+RSpec.describe OmniAuth::Smart::Authorization do
   def stub_authorization
     stub_request(:post, "http://my-server.org/token").to_return(
         headers: {'Content-Type': 'application/json'},
@@ -10,9 +10,9 @@ RSpec.describe SmartAuthorization do
 
   it "can exchange a code for a token" do
     stub_authorization
-    smart = SmartAuthorization.new("http://my-server.org/token")
+    smart = OmniAuth::Smart::Authorization.new("http://my-server.org/token")
     result = smart.exchange_code_for_token(
-             OmniauthSmartClient.new(client_id: "CLIENT", client_secret: "SECRET"),
+             OmniAuth::Smart::Client.new(client_id: "CLIENT", client_secret: "SECRET"),
              "code",
              "http://my-server.org/redirect"
     )

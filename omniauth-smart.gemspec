@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
   gem.name          = "omniauth-smart"
   gem.version       = OmniAuth::Smart::VERSION
   gem.authors       = ["Narath Carlile"]
-  gem.email         = ["narathc@gmail.com"]
+  gem.email         = ["narath@act.md"]
 
   gem.summary       = %q{SMART authentication strategy see https://smarthealthit.org}
   gem.description   = gem.summary

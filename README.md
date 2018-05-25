@@ -52,9 +52,9 @@ OmniAuth.config.logger = Rails.logger
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider(
       :smart,
-      backend: OmniauthSmartBackendArray.new(
+      backend: OmniAuth::Smart::BackendArray.new(
           [
-              OmniauthSmartClient.new(
+              OmniAuth::Smart::Client.new(
                   issuer: "ISSUER_URI",
                   client_id: ENV["CLIENT_ID"],
                   client_secret: ENV["CLIENT_SECRET"]
@@ -96,7 +96,7 @@ Then setup your callback method.
 ```ruby
   def smart_callback
     # 1. get provider identifier from omniauth
-    smart = OmniauthSmartHash.new(request.env['omniauth.auth'])
+    smart = OmniAuth::Smart::Hash.new(request.env['omniauth.auth'])
     # do interesting things with the provider info, the patient context and the FHIR endpoint and token you just got!
   end
 ```
@@ -114,4 +114,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/actmd/
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-

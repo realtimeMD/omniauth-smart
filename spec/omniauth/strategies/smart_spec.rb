@@ -43,14 +43,13 @@ END_TEXT
 
 describe OmniAuth::Strategies::Smart do
   include Rack::Test::Methods
-
   def app
     Sinatra.new do
       configure do
         enable :sessions
       end
       use OmniAuth::Builder do
-        provider :smart, backend: OmniauthSmartBackendArray.new([OmniauthSmartClient.new(issuer: A_CLIENT_ISSUER, client_id: "CLIENT ID", client_secret: "CLIENT SECRET", org_id: "ORG ID")])
+        provider :smart, backend: OmniAuth::Smart::BackendArray.new([OmniAuth::Smart::Client.new(issuer: A_CLIENT_ISSUER, client_id: "CLIENT_ID", client_secret: "CLIENT_SECRET", org_id: "ORG_ID")])
       end
       get "/auth/smart/callback" do
         MultiJson.encode(request.env["omniauth.auth"])
@@ -58,10 +57,11 @@ describe OmniAuth::Strategies::Smart do
     end
   end
 
+  # note: these much match the parameters above (unfortunately let methods do not work within the context above)
   let(:client_id) {'CLIENT_ID'}
   let(:client_secret) {'CLIENT_SECRET'}
   let(:org_id) {'ORG_ID'}
-  let(:backend) { OmniauthSmartBackendArray.new([OmniauthSmartClient.new(issuer: A_CLIENT_ISSUER, client_id: client_id, client_secret: client_secret, org_id: org_id)]) }
+  let(:backend) { OmniAuth::Smart::BackendArray.new([OmniAuth::Smart::Client.new(issuer: A_CLIENT_ISSUER, client_id: client_id, client_secret: client_secret, org_id: org_id)]) }
   let(:application) do
     lambda do
       [200, {}, ['Hello.']]
@@ -121,7 +121,7 @@ describe OmniAuth::Strategies::Smart do
 
     def get_jwt_token
       exp = (Time.now.to_i + 4*3600)
-      id_token = { sub: "SUBJECT", aud: "AUDIENCE", exp: exp, iat: Time.now.to_i }
+      id_token = { sub: "SUBJECT", aud: client_id, exp: exp, iat: Time.now.to_i }
       JWT.encode(id_token,nil,'none')
     end
 

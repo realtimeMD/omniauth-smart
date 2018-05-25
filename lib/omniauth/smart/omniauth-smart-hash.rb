@@ -18,59 +18,64 @@
 #   uid="emr_username"
 # >
 
-class OmniauthSmartHash
-  attr_reader :omniauth_hash
+module OmniAuth
+  module Smart
+    class Hash
+      attr_reader :omniauth_hash
 
-  def initialize(omniauth_hash)
-    @omniauth_hash = omniauth_hash
-  end
+      def initialize(omniauth_hash)
+        @omniauth_hash = omniauth_hash
+      end
 
-  def uid
-    @omniauth_hash[:uid]
-  end
+      def uid
+        @omniauth_hash[:uid]
+      end
 
-  def scope_granted
-    extra['scope_granted']
-  end
+      def scope_granted
+        extra['scope_granted']
+      end
 
-  def style_url
-    extra['style_url']
-  end
+      def style_url
+        extra['style_url']
+      end
 
-  def org_id
-    extra['org_id']
-  end
+      def org_id
+        extra['org_id']
+      end
 
-  def patient_id
-    extra['patient_id']
-  end
+      def patient_id
+        extra['patient_id']
+      end
 
-  def fhir_uri
-    extra['fhir_uri']
-  end
+      def fhir_uri
+        extra['fhir_uri']
+      end
 
-  def token
-    raise KeyError.new("Missing token in omniauth.auth.credentials") unless credentials.has_key?("token")
-    credentials['token']
-  end
+      def token
+        raise KeyError.new("Missing token in omniauth.auth.credentials") unless credentials.has_key?("token")
+        credentials['token']
+      end
 
-  def expires
-    credentials['expires']
-  end
+      def expires
+        credentials['expires']
+      end
 
-  # this returns a unix timestamp
-  # to convert to DateTime use Time.at(expires_at)
-  def expires_at
-    credentials['expires_at']
-  end
+      # this returns a unix timestamp
+      # to convert to DateTime use Time.at(expires_at)
+      def expires_at
+        credentials['expires_at']
+      end
 
-  def extra
-    raise KeyError.new("Missing extra section in omniauth key from hash") unless @omniauth_hash.has_key?("extra")
-    @omniauth_hash["extra"]
-  end
+      def extra
+        raise KeyError.new("Missing extra section in omniauth key from hash") unless @omniauth_hash.has_key?("extra")
+        @omniauth_hash["extra"]
+      end
 
-  def credentials
-    raise KeyError.new("Missing credentials section in omniauth key from hash") unless @omniauth_hash.has_key?("credentials")
-    @omniauth_hash["credentials"]
+      def credentials
+        raise KeyError.new("Missing credentials section in omniauth key from hash") unless @omniauth_hash.has_key?("credentials")
+        @omniauth_hash["credentials"]
+      end
+    end
   end
 end
+

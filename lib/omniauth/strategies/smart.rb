@@ -73,12 +73,12 @@ module OmniAuth
 
         @client = options[:backend].find_by_issuer(@issuer)
         unless @client
-          fail! "No smart client configuration for #{@issuer}"
+          fail! "No backend configured for #{@issuer}"
           return
         end
 
         code = request.params["code"]
-        token_response_json = SmartAuthorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
+        token_response_json = OmniAuth::Smart::Authorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
 
         @smart_scope_granted = token_response_json["scope"]
         if @smart_scope_granted != options[:scope]
@@ -129,7 +129,7 @@ module OmniAuth
       private
 
       def smart_session
-        @smart_session = @smart_session || OmniauthSmartSession.new(session)
+        @smart_session = @smart_session || OmniAuth::Smart::Session.new(session)
       end
 
       def has_backend?
@@ -140,7 +140,7 @@ module OmniAuth
       def smart_url_for(client)
         # Please note here we use our whitelisted client.issuer to
         # get the conformance statement
-        conformance = SmartConformance::get_conformance_from_server(client.issuer)
+        conformance = OmniAuth::Smart::Conformance::get_conformance_from_server(client.issuer)
         scope_requested = client.scope || options[:default_scope]
         smart_session.launching(client, conformance, scope_requested)
         url_with_encoded_params(conformance.authorize_url, {
