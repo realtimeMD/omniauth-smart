@@ -1,10 +1,10 @@
 require 'omniauth'
 require 'jwt'
-require 'omniauth/smart/omniauth-smart-backend'
-require 'omniauth/smart/omniauth-smart-client'
-require 'omniauth/smart/omniauth-smart-session'
-require 'omniauth/smart/smart-conformance'
-require 'omniauth/smart/smart-authorization'
+require 'omniauth/smart/backend'
+require 'omniauth/smart/client'
+require 'omniauth/smart/session'
+require 'omniauth/smart/conformance'
+require 'omniauth/smart/authorization'
 
 module OmniAuth
   module Strategies

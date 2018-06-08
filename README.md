@@ -44,8 +44,8 @@ Add this as a provider to config/initializers/omniauth.rb
 Note: here we are using a simple array backend, but feel free to create your own backend. 
 
 ```ruby
-require 'omniauth/smart/omniauth-smart-backend'
-require 'omniauth/smart/omniauth-smart-client'
+require 'omniauth/smart/backend'
+require 'omniauth/smart/client'
 
 OmniAuth.config.logger = Rails.logger
 
@@ -87,7 +87,7 @@ The OmniAuth /auth/smart/callback will initiate the request phase. Once it is do
 In your sessions controller, require the OmniauthSmartHash so it is easier for you to parse the returned results. 
 
 ```ruby
-require 'omniauth/smart/omniauth-smart-hash'
+require 'omniauth/smart/hash'
 ```
 
 Then setup your callback method.
