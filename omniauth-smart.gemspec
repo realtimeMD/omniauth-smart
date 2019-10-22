@@ -17,14 +17,15 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rspec", "~> 3.6"
   gem.add_development_dependency "webmock", "~> 3.0"
   gem.add_development_dependency "sinatra", "~> 2"
-  gem.add_development_dependency "rubocop", "~> 0.67.0"
-  gem.add_development_dependency "rubocop-rails", "~> 1.5.0"
+  gem.add_development_dependency "rubocop", "~> 0.75.1"
+  gem.add_development_dependency "rubocop-rails_config", "0.5.1"
+  gem.add_development_dependency "rubocop-performance", "~> 1.5.0"
   gem.add_development_dependency "bundler-audit", "~> 0.6.0"
 
   gem.name          = "omniauth-smart"
   gem.version       = OmniAuth::Smart::VERSION
-  gem.authors       = ["Developers at ACT.md"]
-  gem.email         = ["developers@act.md"]
+  gem.authors       = ["Enigneers at ACT.md"]
+  gem.email         = ["engineering@act.md"]
 
   gem.summary       = "SMART authentication strategy see https://smarthealthit.org"
   gem.description   = gem.summary
