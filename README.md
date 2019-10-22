@@ -20,14 +20,16 @@ Or install it yourself as:
 
 ## Usage
 
+This project is in *DEVELOPMENT STATUS* and has not been verified to be free of bugs, security issues, etc. Feel free to use this gem as part of your internal projects and/or testing, however ACT.md *DOES NOT* claim any responsibility for any issues that may arise from using this gem. As such, use at your own risk and we advise not to use it in a production setting or anywhere where it may compromise any data.
+
 ## Register your application
- 
+
 SMART is designed to allow your application to be launched from within an electronic medical record. To properly ensure that your SMART application is working, you will need
 
  * an issuer URL: this is the URI of the site that will launch your application (for testing purposes you will be using a SMART sandbox)
  * client id : this will be a GUID that uniquely identifies your application
  * client secret : this will be a secret known only to your app and the SMART server. This is not always required (say for javascript in browser apps), but since this is a server version and can keep a secret, we recommend using it
- 
+
 You also need to specify an "org id" which will be a unique value passed back to your application that links this launch to an organization in your application (to support multi-tenant applications).
 
 ## SMART Sandboxes
@@ -41,7 +43,7 @@ You also need to specify an "org id" which will be a unique value passed back to
 
 Add this as a provider to config/initializers/omniauth.rb
 
-Note: here we are using a simple array backend, but feel free to create your own backend. 
+Note: here we are using a simple array backend, but feel free to create your own backend.
 
 ```ruby
 require 'omniauth/smart/backend'
@@ -84,7 +86,7 @@ The OmniAuth /auth/smart/callback will initiate the request phase. Once it is do
 
 ### Handling the callback
 
-In your sessions controller, require the OmniauthSmartHash so it is easier for you to parse the returned results. 
+In your sessions controller, require the OmniauthSmartHash so it is easier for you to parse the returned results.
 
 ```ruby
 require 'omniauth/smart/hash'
