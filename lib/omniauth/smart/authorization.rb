@@ -36,6 +36,7 @@ module OmniAuth
         end
 
         if !r.success?
+          # FIXME: NoMethodError (undefined method `fail!' for #<OmniAuth::Smart::Authorization:0x00007f9400b9da98>
           fail! "An error occurred. Could not get token."
         end
 
@@ -44,4 +45,3 @@ module OmniAuth
     end
   end
 end
-

@@ -81,8 +81,8 @@ module OmniAuth
         token_response_json = OmniAuth::Smart::Authorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
 
         @smart_scope_granted = token_response_json["scope"]
-        if @smart_scope_granted != options[:scope]
-          log :warn, "Different scope granted: requested=#{options[:scope]} granted=#{@smart_scope_granted}"
+        if @smart_scope_granted != @client.scope
+          log :warn, "Different scope granted: requested=#{@client.scope} granted=#{@smart_scope_granted}"
         end
 
         @smart_access_token = token_response_json["access_token"]
