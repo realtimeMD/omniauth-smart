@@ -81,6 +81,11 @@ module OmniAuth
         code = request.params["code"]
         token_response_json = OmniAuth::Smart::Authorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
 
+        if token_response_json["error"].present?
+          log :error, token_response_json["error"]
+          fail! "Failed authorization with error: #{token_response_json["error"]}"
+        end
+
         @smart_scope_granted = token_response_json["scope"]
         if @smart_scope_granted != @client.scope
           log :warn, "Different scope granted: requested=#{@client.scope} granted=#{@smart_scope_granted}"

@@ -35,11 +35,6 @@ module OmniAuth
           req.body = URI.encode_www_form(data)
         end
 
-        if !r.success?
-          # FIXME: NoMethodError (undefined method `fail!' for #<OmniAuth::Smart::Authorization:0x00007f9400b9da98>
-          fail! "An error occurred. Could not get token."
-        end
-
         MultiJson.load(r.body)
       end
     end
