@@ -105,7 +105,7 @@ module OmniAuth
         rescue StandardError => e
           log :error, e.message
           log :error, e.backtrace
-          fail! 'Decoding of JWT failed'
+          fail! "Decoding of JWT failed with #{e.message}"
         end
 
         @id_data = decoded.first
