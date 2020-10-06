@@ -5,6 +5,7 @@ require 'omniauth/smart/client'
 require 'omniauth/smart/session'
 require 'omniauth/smart/conformance'
 require 'omniauth/smart/authorization'
+require 'omniauth/smart/jwt_verification'
 
 module OmniAuth
   module Strategies
@@ -94,8 +95,7 @@ module OmniAuth
         # id_data data is in the first item, (the second item should contain the JWT algorithm)
         # See http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         # Also http://fhir.cerner.com/authorization/openid-connect/
-        # Since we have communicated directly with the token server to obtain this token, we will consider this a trusted token and only confirm the audience to be our client_id
-        @id_data = JWT.decode(token_response_json["id_token"], nil, false, aud: @client.client_id, verify_aud: true)[0]
+        @id_data = OmniAuth::Smart::JwtVerification.new(token_response_json["id_token"], @client.open_id_configuration_url).verify!
 
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]
