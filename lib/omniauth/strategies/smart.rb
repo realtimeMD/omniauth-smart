@@ -95,7 +95,15 @@ module OmniAuth
         # id_data data is in the first item, (the second item should contain the JWT algorithm)
         # See http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         # Also http://fhir.cerner.com/authorization/openid-connect/
-        @id_data = OmniAuth::Smart::JwtVerification.new(token_response_json["id_token"], @client.open_id_configuration_url).decode.first
+        begin
+          decoded = OmniAuth::Smart::JwtVerification.new(token_response_json["id_token"], @client.open_id_configuration_url).decode
+        rescue StandardError => e
+          log :error, e.message
+          log :error, e.backtrace
+          fail! 'Decoding of JWT failed'
+        end
+
+        @id_data = decoded.first
 
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]
