@@ -8,7 +8,7 @@ module OmniAuth
         @url = open_id_configuration_url
       end
 
-      def verify!
+      def decode
         conn = Faraday.new
         open_id_response = conn.get(@url)
         jwks_uri = MultiJson.load(open_id_response.body)['jwks_uri']
