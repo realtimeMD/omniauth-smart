@@ -14,7 +14,13 @@ module OmniAuth
         jwks_uri = MultiJson.load(open_id_response.body)['jwks_uri']
         jwk_response = conn.get(jwks_uri)
         jwks = MultiJson.load(jwk_response.body)
-        JWT.decode(@token, nil, true, { algorithms: ['RS256'], jwks: jwks.symbolize_keys })
+        JWT.decode(@token, nil, true, { algorithms: ['RS256'], jwks: transform_jwks_hash_to_symbols(jwks) })
+      end
+
+      private
+
+      def transform_jwks_hash_to_symbols(jwks)
+        { keys: jwks["keys"].map { |h| h.symbolize_keys } }
       end
     end
   end
