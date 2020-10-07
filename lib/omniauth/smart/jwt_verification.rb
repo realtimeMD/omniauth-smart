@@ -1,5 +1,6 @@
 require 'jwt'
 require 'multi_json'
+require 'faraday'
 
 module OmniAuth
   module Smart

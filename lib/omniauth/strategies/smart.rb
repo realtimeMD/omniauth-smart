@@ -81,7 +81,7 @@ module OmniAuth
         code = request.params["code"]
         token_response_json = OmniAuth::Smart::Authorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
 
-        if token_response_json["error"].present?
+        if !token_response_json["error"].nil?
           log :error, token_response_json["error"]
           fail! "Failed authorization with error: #{token_response_json["error"]}"
         end
