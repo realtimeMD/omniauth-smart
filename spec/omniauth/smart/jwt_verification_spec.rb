@@ -11,7 +11,7 @@ describe OmniAuth::Smart::JwtVerification do
   let(:token) { JWT.encode(payload, jwk.keypair, 'RS256', headers) }
   let(:other_jwk) { JWT::JWK.new(OpenSSL::PKey::RSA.new(2048)) }
 
-  it 'is true' do
+  it 'will decode the jwt when the correct jwk is used' do
     stub_request(:get, open_id_configuration_url).to_return(
       body: { jwks_uri: jwks_uri }.to_json
     )
@@ -21,7 +21,7 @@ describe OmniAuth::Smart::JwtVerification do
     expect(OmniAuth::Smart::JwtVerification.new(token, open_id_configuration_url).decode).to eq([{ 'data' => 'data' }, { 'kid' => jwk.kid, 'alg'=> 'RS256' }])
   end
 
-  it 'is true' do
+  it 'will raise an exception when using wrong jwk to decode jwt' do
     stub_request(:get, open_id_configuration_url).to_return(
       body: { jwks_uri: jwks_uri }.to_json
     )
