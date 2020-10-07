@@ -1,4 +1,5 @@
 require 'jwt'
+require 'multi_json'
 
 module OmniAuth
   module Smart
