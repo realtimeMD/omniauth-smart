@@ -22,7 +22,7 @@ module OmniAuth
       private
 
       def transform_jwks_hash_to_symbols(jwks)
-        { keys: jwks["keys"].map { |h| h.symbolize_keys } }
+        { keys: jwks["keys"].map { |h| h.transform_keys(&:to_sym) } }
       end
     end
   end
