@@ -9,7 +9,7 @@ NOT_A_CLIENT_ISSUER = "notme"
 
 CONFORMANCE = <<END_TEXT
 {
-  "resourceType": "Conformance", 
+  "resourceType": "Conformance",
   "rest": [{
       "security": {
         "service": [
@@ -61,7 +61,8 @@ describe OmniAuth::Strategies::Smart do
   let(:client_id) {'CLIENT_ID'}
   let(:client_secret) {'CLIENT_SECRET'}
   let(:org_id) {'ORG_ID'}
-  let(:backend) { OmniAuth::Smart::BackendArray.new([OmniAuth::Smart::Client.new(issuer: A_CLIENT_ISSUER, client_id: client_id, client_secret: client_secret, org_id: org_id)]) }
+  let(:open_id_configuration_url) { 'https://someurl.com' }
+  let(:backend) { OmniAuth::Smart::BackendArray.new([OmniAuth::Smart::Client.new(issuer: A_CLIENT_ISSUER, client_id: client_id, client_secret: client_secret, org_id: org_id, open_id_configuration_url: open_id_configuration_url)]) }
   let(:application) do
     lambda do
       [200, {}, ['Hello.']]
@@ -119,11 +120,8 @@ describe OmniAuth::Strategies::Smart do
       end
     end
 
-    def get_jwt_token
-      exp = (Time.now.to_i + 4*3600)
-      id_token = { sub: "SUBJECT", aud: client_id, exp: exp, iat: Time.now.to_i }
-      JWT.encode(id_token,nil,'none')
-    end
+    let(:jwt_token) { { 'sub' => "SUBJECT", 'aud' => client_id, 'exp' => Time.now.to_i + 4*3600, 'iat' => Time.now.to_i } }
+    let(:encoded_jwt_token) { JWT.encode(jwt_token,nil,'none') }
 
     def stub_authorization
       stub_request(:post, "http://my-server.org/token").to_return(
@@ -134,7 +132,7 @@ describe OmniAuth::Strategies::Smart do
   "access_token": "ACCESS TOKEN",
   "patient": "PATIENT ID",
   "smart_style_url": "http://my-server.org/style.css",
-  "id_token": "#{get_jwt_token}",
+  "id_token": "#{encoded_jwt_token}",
   "refresh_token": "refresh token"
 }
 END_TEXT
@@ -153,7 +151,7 @@ END_TEXT
           state_id = $1
         end
         expect(state_id).to_not be_nil
-
+        expect_any_instance_of(OmniAuth::Smart::JwtVerification).to receive(:decode).and_return([jwt_token])
         get "/auth/smart/callback?code=1234&state=#{state_id}"
         expect(last_response.status).to be 200
         expect(last_response.body).to match /SUBJECT/

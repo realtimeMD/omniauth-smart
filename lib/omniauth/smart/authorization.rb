@@ -35,13 +35,8 @@ module OmniAuth
           req.body = URI.encode_www_form(data)
         end
 
-        if !r.success?
-          fail! "An error occurred. Could not get token."
-        end
-
         MultiJson.load(r.body)
       end
     end
   end
 end
-

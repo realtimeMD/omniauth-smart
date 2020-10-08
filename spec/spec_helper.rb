@@ -9,6 +9,7 @@ require 'omniauth/smart/session'
 require 'omniauth/smart/client'
 require 'omniauth/smart/conformance'
 require 'omniauth/smart/authorization'
+require 'omniauth/smart/jwt_verification'
 
 WebMock.disable_net_connect!
 

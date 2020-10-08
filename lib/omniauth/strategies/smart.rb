@@ -5,6 +5,7 @@ require 'omniauth/smart/client'
 require 'omniauth/smart/session'
 require 'omniauth/smart/conformance'
 require 'omniauth/smart/authorization'
+require 'omniauth/smart/jwt_verification'
 
 module OmniAuth
   module Strategies
@@ -80,9 +81,14 @@ module OmniAuth
         code = request.params["code"]
         token_response_json = OmniAuth::Smart::Authorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
 
+        if !token_response_json["error"].nil?
+          log :error, token_response_json["error"]
+          fail! "Failed authorization with error: #{token_response_json["error"]}"
+        end
+
         @smart_scope_granted = token_response_json["scope"]
-        if @smart_scope_granted != options[:scope]
-          log :warn, "Different scope granted: requested=#{options[:scope]} granted=#{@smart_scope_granted}"
+        if @smart_scope_granted != @client.scope
+          log :warn, "Different scope granted: requested=#{@client.scope} granted=#{@smart_scope_granted}"
         end
 
         @smart_access_token = token_response_json["access_token"]
@@ -94,8 +100,15 @@ module OmniAuth
         # id_data data is in the first item, (the second item should contain the JWT algorithm)
         # See http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         # Also http://fhir.cerner.com/authorization/openid-connect/
-        # Since we have communicated directly with the token server to obtain this token, we will consider this a trusted token and only confirm the audience to be our client_id
-        @id_data = JWT.decode(token_response_json["id_token"], nil, false, aud: @client.client_id, verify_aud: true)[0]
+        begin
+          decoded = OmniAuth::Smart::JwtVerification.new(token_response_json["id_token"], @client.open_id_configuration_url).decode
+        rescue StandardError => e
+          log :error, e.message
+          log :error, e.backtrace
+          fail! "Decoding of JWT failed with #{e.message}"
+        end
+
+        @id_data = decoded.first
 
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]

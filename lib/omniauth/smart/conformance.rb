@@ -18,7 +18,7 @@ module OmniAuth
       end
 
       def initialize(conformance_json)
-        raise ConformanceError.new("Expecting json hash, instead go #{conformance_json.class}") unless conformance_json.is_a?(Hash)
+        raise ConformanceError.new("Expecting json hash, instead go #{conformance_json.class}") unless conformance_json.is_a?(::Hash)
         @conformance_json = conformance_json
         parse
       end
@@ -79,4 +79,3 @@ module OmniAuth
     end
   end
 end
-

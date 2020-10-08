@@ -7,7 +7,7 @@ require "omniauth-smart/version"
 
 Gem::Specification.new do |gem|
   gem.add_runtime_dependency "omniauth", "~> 1.0"
-  gem.add_runtime_dependency "jwt", "~> 2.2.1"
+  gem.add_runtime_dependency "jwt", "~> 2.2.2"
   gem.add_runtime_dependency "faraday", ">= 0.8"
   gem.add_runtime_dependency "multi_json", "~> 1.3"
 
@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rubocop-rails_config", "0.7.3"
   gem.add_development_dependency "rubocop-performance", "~> 1.5.0"
   gem.add_development_dependency "bundler-audit", "~> 0.6.0"
+  gem.add_development_dependency "byebug"
 
   gem.name          = "omniauth-smart"
   gem.version       = OmniAuth::Smart::VERSION
