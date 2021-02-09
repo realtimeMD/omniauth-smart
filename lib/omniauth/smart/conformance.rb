@@ -14,11 +14,11 @@ module OmniAuth
       # Read conformance from a server and returns a smart conformance object
       def self.get_conformance_from_server(service_uri)
         conformance_json = self.read_conformance(service_uri)
+        raise ConformanceError.new("Bad Conformance Data") unless conformance_json.is_a?(::Hash)
         OmniAuth::Smart::Conformance.new(conformance_json)
       end
 
       def initialize(conformance_json)
-        raise ConformanceError.new("Expecting json hash, instead go #{conformance_json.class}") unless conformance_json.is_a?(Hash)
         @conformance_json = conformance_json
         parse
       end
