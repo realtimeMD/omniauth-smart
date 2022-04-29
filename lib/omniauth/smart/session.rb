@@ -82,6 +82,7 @@ module OmniAuth
       # returns true iff is the correct state id, and status is LAUNCHING_STATUS
       def is_launching?(request_state)
         if request_state != state_id
+          OmniAuth.logger.info(expected_state: state_id, request_state: request_state)
           return {result: false, error: "An error occurred. Invalid state id"}
         end
 
@@ -100,4 +101,3 @@ module OmniAuth
     end
   end
 end
-

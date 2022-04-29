@@ -186,6 +186,7 @@ module OmniAuth
           smart_session.launched
           return true
         else
+          OmniAuth.logger.info(cookies: request.cookies.to_json, session: session.to_json)
           fail! result[:error]
           return false
         end
