@@ -41,7 +41,7 @@ module OmniAuth
       include OmniAuth::Strategy
 
       option :backend, nil
-      option :default_scope, "patient/Patient.read launch openid profile online_scope"
+      option :default_scope, "patient/Patient.read user/Practitioner.read launch openid profile online_scope fhirUser"
 
       def request_phase
         return unless has_backend?
@@ -99,7 +99,12 @@ module OmniAuth
         # See http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         # Also http://fhir.cerner.com/authorization/openid-connect/
         # Since we have communicated directly with the token server to obtain this token, we will consider this a trusted token and only confirm the audience to be our client_id
-        @id_data = JWT.decode(token_response_json["id_token"], nil, false, aud: @client.client_id, verify_aud: true)[0]
+        @id_token = token_response_json["id_token"]
+        @id_data = JWT.decode(@id_token, nil, false, aud: @client.client_id, verify_aud: true)[0]
+
+        # including @fhir_user_uri for future debugging in case the shape changes
+        @fhir_user_uri = @id_data['fhirUser']
+        @practitioner_id = @fhir_user_uri&.split('/')&.last
 
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]
@@ -114,6 +119,7 @@ module OmniAuth
       credentials do
         {
             :token => @smart_access_token,
+            :id_token => @id_token,
             :expires => true,
             :expires_at => @id_data["iat"]
         }
@@ -123,6 +129,8 @@ module OmniAuth
         {
             org_id: @client.org_id,
             patient_id: @smart_patient_id,
+            practitioner_id: @practitioner_id,
+            fhir_user_uri: @fhir_user_uri,
             fhir_uri: @smart_service_uri,
             style_url: @smart_style_url,
             scope_granted: @smart_scope_granted,
@@ -164,7 +172,8 @@ module OmniAuth
 
       # SMART protocol requires submitting the url with encoded parameters
       def url_with_encoded_params(uri, params)
-        "#{URI.escape(uri)}?#{URI.encode_www_form(params)}"
+        # uri parsing https://gitlab.com/honeyryderchuck/httpx/-/blob/master/lib/httpx/utils.rb#L28-41
+        "#{URI::RFC2396_Parser.new.escape(uri)}?#{URI.encode_www_form(params)}"
       end
 
       def redirect_uri

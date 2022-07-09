@@ -8,7 +8,7 @@ require "omniauth-smart/version"
 Gem::Specification.new do |gem|
   gem.add_runtime_dependency "omniauth", "~> 1.0"
   gem.add_runtime_dependency "jwt", "~> 2.2.1"
-  gem.add_runtime_dependency "faraday", ">= 0.8"
+  gem.add_runtime_dependency "faraday", "~> 1.0"
   gem.add_runtime_dependency "multi_json", "~> 1.3"
 
   gem.add_development_dependency "bundler", "~> 1.14"
