@@ -9,7 +9,7 @@ NOT_A_CLIENT_ISSUER = "notme"
 
 CONFORMANCE = <<END_TEXT
 {
-  "resourceType": "Conformance", 
+  "resourceType": "Conformance",
   "rest": [{
       "security": {
         "service": [
@@ -78,7 +78,7 @@ describe OmniAuth::Strategies::Smart do
     end
 
     it 'has a default scope' do
-      expect(subject[:default_scope]).to match /patient/i
+      expect(subject[:default_scope]).to eq('patient/Patient.read user/Practitioner.read launch openid profile online_scope fhirUser')
     end
 
     it 'can override default scope' do
@@ -119,11 +119,11 @@ describe OmniAuth::Strategies::Smart do
       end
     end
 
-    def get_jwt_token
-      exp = (Time.now.to_i + 4*3600)
-      id_token = { sub: "SUBJECT", aud: client_id, exp: exp, iat: Time.now.to_i }
-      JWT.encode(id_token,nil,'none')
+    let(:id_token_exp) { Time.now.to_i + 4 * 3600 }
+    let(:id_token) do
+      { sub: "SUBJECT", aud: client_id, exp: id_token_exp, iat: Time.now.to_i }
     end
+    let(:encoded_id_token) { JWT.encode(id_token, nil, 'none') }
 
     def stub_authorization
       stub_request(:post, "http://my-server.org/token").to_return(
@@ -134,14 +134,14 @@ describe OmniAuth::Strategies::Smart do
   "access_token": "ACCESS TOKEN",
   "patient": "PATIENT ID",
   "smart_style_url": "http://my-server.org/style.css",
-  "id_token": "#{get_jwt_token}",
+  "id_token": "#{encoded_id_token}",
   "refresh_token": "refresh token"
 }
 END_TEXT
       )
     end
 
-    context "callback" do
+    describe "callback" do
       it 'requests a token' do
         stub_launch
         stub_authorization
@@ -160,7 +160,39 @@ END_TEXT
         expect(last_response.body).to match /ACCESS TOKEN/
       end
 
+      context 'when cerner is the issuer' do
+        let(:practitioner_id) { 'PRACTITIONER_ID' }
+        let(:fhir_user) { "https://fhir-ehr-code.cerner.com/r4/product-id/Practitioner/#{practitioner_id}" }
+        let(:id_token) do
+          {
+            sub: "SUBJECT",
+            aud: client_id,
+            exp: id_token_exp,
+            iat: Time.now.to_i,
+            fhirUser: fhir_user,
+          }
+        end
+
+        it 'sets practitioner_id' do
+          stub_launch
+          stub_authorization
+          get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+          if last_response.location =~ /state=([^&]*)/
+            state_id = $1
+          end
+          expect(state_id).to_not be_nil
+
+          get "/auth/smart/callback?code=1234&state=#{state_id}"
+          expect(last_response.status).to be 200
+          expect(last_response.body).to match /SUBJECT/
+          expect(last_response.body).to match /ACCESS TOKEN/
+
+          parsed_body = JSON.parse(last_response.body)
+          expect(parsed_body['extra']['practitioner_id']).to eq(practitioner_id)
+          expect(parsed_body['extra']['fhir_user_uri']).to eq(fhir_user)
+          expect(parsed_body['credentials']['id_token']).to eq(encoded_id_token)
+        end
+      end
     end
   end
-
 end
