@@ -172,8 +172,7 @@ module OmniAuth
 
       # SMART protocol requires submitting the url with encoded parameters
       def url_with_encoded_params(uri, params)
-        # uri parsing https://gitlab.com/honeyryderchuck/httpx/-/blob/master/lib/httpx/utils.rb#L28-41
-        "#{URI::RFC2396_Parser.new.escape(uri)}?#{URI.encode_www_form(params)}"
+        "#{URI::Parser.new.escape(uri)}?#{URI.encode_www_form(params)}"
       end
 
       def redirect_uri
