@@ -23,7 +23,7 @@ module OmniAuth
 
         conn = Faraday.new do |conn|
           if client.is_confidential?
-            conn.basic_auth(client.client_id, client.client_secret)
+            conn.request :authorization, :basic, client.client_id, client.client_secret
           end
           # this must be 'application/x-www-form-urlencoded'
           conn.request :url_encoded

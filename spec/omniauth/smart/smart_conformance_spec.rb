@@ -10,6 +10,8 @@ RSpec.describe OmniAuth::Smart::Conformance do
   end
 
   it "raises an error when not valid" do
-    expect{OmniAuth::Smart::Conformance.new("invalid: 'json'")}.to raise_error OmniAuth::Smart::ConformanceError
+    url = "http://example.com/#{rand(1..99)}"
+    expect(OmniAuth::Smart::Conformance).to receive(:read_conformance).with(url).and_return("invalid: 'json'")
+    expect{ OmniAuth::Smart::Conformance.get_conformance_from_server(url) }.to raise_error OmniAuth::Smart::ConformanceError
   end
 end

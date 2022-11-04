@@ -4,7 +4,7 @@ require 'multi_json'
 module OmniAuth
   module Smart
 
-    class ConformanceError < StandardError; end;
+    class ConformanceError < StandardError; end
 
     # Knows how to read the conformance statement from a SMART on FHIR server
     # When created it attempts to read the conformance statement from the service uri
