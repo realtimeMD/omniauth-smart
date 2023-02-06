@@ -108,6 +108,7 @@ module OmniAuth
 
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]
+        log :info, "[SMART Auth] [debug] #{token_response_json.except('access_token', 'id_token')}" rescue nil
 
         super
       end
