@@ -100,20 +100,20 @@ describe OmniAuth::Strategies::Smart do
       it 'errors if there is no issuer' do
         get '/auth/smart'
         expect(last_response.status).to eq(302)
-        expect(last_response.location).to match /failure/
-        expect(last_response.location).to match /Unknown issuer/i
+        expect(last_response.location).to include 'failure'
+        expect(last_response.location).to include 'Unknown+issuer'
       end
 
       it 'errors if the issuer is not in allowed_clients' do
         get "/auth/smart?iss=#{NOT_A_CLIENT_ISSUER}"
         expect(last_response.status).to eq(302)
-        expect(last_response.location).to match /failure/
-        expect(last_response.location).to match /Unknown issuer/i
+        expect(last_response.location).to include 'failure'
+        expect(last_response.location).to include 'Unknown+issuer'
       end
 
       it 'redirects to emr authentication server' do
         stub_launch
-        get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+        get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /my-server.org\/authorize/
       end
@@ -145,7 +145,7 @@ END_TEXT
       it 'requests a token' do
         stub_launch
         stub_authorization
-        get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+        get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /my-server.org\/authorize/
 
@@ -176,7 +176,7 @@ END_TEXT
         it 'sets practitioner_id' do
           stub_launch
           stub_authorization
-          get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+          get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
           if last_response.location =~ /state=([^&]*)/
             state_id = $1
           end
