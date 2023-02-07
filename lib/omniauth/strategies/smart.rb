@@ -109,6 +109,7 @@ module OmniAuth
         # the refresh token may or may not be included in the json
         @refresh_token = token_response_json["refresh_token"]
         log :info, "[SMART Auth] [debug] #{token_response_json.except('access_token', 'id_token')}" rescue nil
+        @ehr_domain = token_response_json["domain"] || token_response_json["ehr_domain"]
 
         super
       end
@@ -135,7 +136,8 @@ module OmniAuth
             fhir_uri: @smart_service_uri,
             style_url: @smart_style_url,
             scope_granted: @smart_scope_granted,
-            refresh_token: @refresh_token
+            refresh_token: @refresh_token,
+            ehr_domain: @ehr_domain
         }
       end
 
