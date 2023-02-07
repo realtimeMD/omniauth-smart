@@ -100,20 +100,20 @@ describe OmniAuth::Strategies::Smart do
       it 'errors if there is no issuer' do
         get '/auth/smart'
         expect(last_response.status).to eq(302)
-        expect(last_response.location).to match /failure/
-        expect(last_response.location).to match /Unknown issuer/i
+        expect(last_response.location).to include 'failure'
+        expect(last_response.location).to include 'Unknown+issuer'
       end
 
       it 'errors if the issuer is not in allowed_clients' do
         get "/auth/smart?iss=#{NOT_A_CLIENT_ISSUER}"
         expect(last_response.status).to eq(302)
-        expect(last_response.location).to match /failure/
-        expect(last_response.location).to match /Unknown issuer/i
+        expect(last_response.location).to include 'failure'
+        expect(last_response.location).to include 'Unknown+issuer'
       end
 
       it 'redirects to emr authentication server' do
         stub_launch
-        get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+        get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /my-server.org\/authorize/
       end
@@ -124,6 +124,7 @@ describe OmniAuth::Strategies::Smart do
       { sub: "SUBJECT", aud: client_id, exp: id_token_exp, iat: Time.now.to_i }
     end
     let(:encoded_id_token) { JWT.encode(id_token, nil, 'none') }
+    let(:ehr_domain) { nil }
 
     def stub_authorization
       stub_request(:post, "http://my-server.org/token").to_return(
@@ -135,7 +136,8 @@ describe OmniAuth::Strategies::Smart do
   "patient": "PATIENT ID",
   "smart_style_url": "http://my-server.org/style.css",
   "id_token": "#{encoded_id_token}",
-  "refresh_token": "refresh token"
+  "refresh_token": "refresh token",
+  "ehr_domain": "#{ehr_domain}"
 }
 END_TEXT
       )
@@ -145,7 +147,7 @@ END_TEXT
       it 'requests a token' do
         stub_launch
         stub_authorization
-        get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+        get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /my-server.org\/authorize/
 
@@ -158,6 +160,24 @@ END_TEXT
         expect(last_response.status).to be 200
         expect(last_response.body).to match /SUBJECT/
         expect(last_response.body).to match /ACCESS TOKEN/
+      end
+
+      context 'with an ehr_domain' do
+        let(:ehr_domain) { 'example.com' }
+
+        it 'sets ehr_domain' do
+          stub_launch
+          stub_authorization
+          get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
+          if last_response.location =~ /state=([^&]*)/
+            state_id = $1
+          end
+          expect(state_id).to_not be_nil
+
+          get "/auth/smart/callback?code=1234&state=#{state_id}"
+          parsed_body = JSON.parse(last_response.body)
+          expect(parsed_body['extra']['ehr_domain']).to eq('example.com')
+        end
       end
 
       context 'when cerner is the issuer' do
@@ -176,7 +196,7 @@ END_TEXT
         it 'sets practitioner_id' do
           stub_launch
           stub_authorization
-          get "/auth/smart?iss=#{URI.encode(A_CLIENT_ISSUER)}"
+          get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
           if last_response.location =~ /state=([^&]*)/
             state_id = $1
           end
