@@ -62,19 +62,17 @@ module OmniAuth
       end
 
       def callback_phase
-        return unless no_callback_errors?
-        return unless state_is_correct?
+        return fail!(:no_callback_errors?) unless no_callback_errors?
+        return fail!(:state_is_correct?) unless state_is_correct?
 
         @issuer = smart_session.issuer
         unless @issuer
-          fail! "No smart client"
-          return
+          return fail!("No smart client")
         end
 
         @client = options[:backend].find_by_issuer(@issuer)
         unless @client
-          fail! "No backend configured for #{@issuer}"
-          return
+          return fail!("No backend configured for #{@issuer}")
         end
 
         code = request.params["code"]
