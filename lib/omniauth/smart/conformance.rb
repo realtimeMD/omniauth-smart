@@ -11,6 +11,8 @@ module OmniAuth
     class Conformance
       attr_reader :authorize_url, :token_url
 
+      KNOWN_SECURITY_EXTENSION_URL = "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris".freeze
+
       # Read conformance from a server and returns a smart conformance object
       def self.get_conformance_from_server(service_uri)
         conformance_json = self.read_conformance(service_uri)
@@ -66,14 +68,16 @@ module OmniAuth
       end
 
       def is_known_security_extension?(security_extension_json)
-        security_extension_json["url"] == "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris"
+        security_extension_json["url"] == KNOWN_SECURITY_EXTENSION_URL
       end
 
       def parse_security_extension
         if @conformance_json.has_key?("Conformance")
           @conformance_json["Conformance"]["rest"]["security"]["extension"]
         else
-          @conformance_json["rest"][0]["security"]["extension"][0]
+          @conformance_json["rest"][0]["security"]["extension"].find do |extension|
+            extension["url"] == KNOWN_SECURITY_EXTENSION_URL
+          end
         end
       end
     end

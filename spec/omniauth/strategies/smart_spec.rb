@@ -24,6 +24,19 @@ CONFORMANCE = <<END_TEXT
           }
         ],
         "extension": [{
+          "url": "http://DSTU2/fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
+          "extension": [{
+            "url": "token",
+            "valueUri": "http://my-server.org/token"
+          },{
+            "url": "authorize",
+            "valueUri": "http://my-server.org/authorize"
+          },{
+            "url": "manage",
+            "valueUri": "http://my-server.org/authorizations/manage"
+          }]
+        },
+        {
           "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
           "extension": [{
             "url": "token",
