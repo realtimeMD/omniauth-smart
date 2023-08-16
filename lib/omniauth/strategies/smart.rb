@@ -161,12 +161,15 @@ module OmniAuth
 
       private
 
+      # Must be a random URL-safe string with a minimum length of 43 characters
       def generate_code_verifier
-        SecureRandom.urlsafe_base64(64)
+        SecureRandom.urlsafe_base64(32).gsub(/=+$/, '')
       end
 
+      # Must be a Base64URL-encoded SHA-256 hash of the code verifier
       def generate_code_challenge(verifier)
-        Digest::SHA256.base64digest(verifier)
+        hashed = Digest::SHA256.digest(verifier)
+        Base64.strict_encode64(hashed).tr('+/', '-_').gsub(/=+$/, '')
       end
 
       def smart_session
