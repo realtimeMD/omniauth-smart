@@ -1,5 +1,7 @@
 require 'omniauth'
 require 'jwt'
+require 'digest'
+require 'digest/sha2'
 require 'omniauth/smart/backend'
 require 'omniauth/smart/client'
 require 'omniauth/smart/session'
@@ -53,7 +55,17 @@ module OmniAuth
         else
           client = options[:backend].find_by_issuer(issuer)
           if client
+            if client.use_pkce
+              verifier = generate_code_verifier
+              challenge = generate_code_challenge(verifier)
+
+              # Store the verifier in session
+              session['omniauth.pkce.code_verifier'] = verifier
+
+              redirect smart_url_for(client, challenge)
+            else
               redirect smart_url_for(client)
+            end
           else
             log :error, "Unknown issuer #{issuer}"
             fail! "Unknown issuer."
@@ -76,7 +88,15 @@ module OmniAuth
         end
 
         code = request.params["code"]
-        token_response_json = OmniAuth::Smart::Authorization.new(smart_session.token_url).exchange_code_for_token(@client, code, redirect_uri)
+        # Include code_verifier if PKCE is used
+        code_verifier = session['omniauth.pkce.code_verifier']
+        authorization = OmniAuth::Smart::Authorization.new(smart_session.token_url)
+        token_response_json =
+          if code_verifier
+            authorization.exchange_code_for_token(@client, code, redirect_uri, code_verifier)
+          else
+            authorization.exchange_code_for_token(@client, code, redirect_uri)
+          end
 
         if token_response_json["error"]
           fail! "An error occurred. Could not get token."
@@ -141,6 +161,14 @@ module OmniAuth
 
       private
 
+      def generate_code_verifier
+        SecureRandom.urlsafe_base64(64)
+      end
+
+      def generate_code_challenge(verifier)
+        Digest::SHA256.base64digest(verifier)
+      end
+
       def smart_session
         @smart_session = @smart_session || OmniAuth::Smart::Session.new(session)
       end
@@ -150,21 +178,28 @@ module OmniAuth
         options[:backend]
       end
 
-      def smart_url_for(client)
-        # Please note here we use our whitelisted client.issuer to
-        # get the conformance statement
+      def smart_url_for(client, challenge = nil)
         conformance = OmniAuth::Smart::Conformance::get_conformance_from_server(client.issuer)
         scope_requested = client.scope || options[:default_scope]
         smart_session.launching(client, conformance, scope_requested)
-        url_with_encoded_params(conformance.authorize_url, {
-            response_type: "code",
-            client_id: client.client_id,
-            scope: scope_requested,
-            redirect_uri: redirect_uri,
-            aud: client.issuer,
-            launch: launch_context_id,
-            state: smart_session.state_id
-        })
+
+        params = {
+          response_type: "code",
+          client_id: client.client_id,
+          scope: scope_requested,
+          redirect_uri: redirect_uri,
+          aud: client.issuer,
+          launch: launch_context_id,
+          state: smart_session.state_id
+        }
+
+        # Append PKCE parameters if challenge is provided
+        if challenge
+          params[:code_challenge] = challenge
+          params[:code_challenge_method] = "S256"  # this is the method used for SHA256
+        end
+
+        url_with_encoded_params(conformance.authorize_url, params)
       end
 
       def launch_context_id

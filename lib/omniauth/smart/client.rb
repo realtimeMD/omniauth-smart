@@ -7,7 +7,7 @@
 module OmniAuth
   module Smart
     class Client
-      attr_accessor :issuer, :client_id, :client_secret, :org_id, :scope
+      attr_accessor :issuer, :client_id, :client_secret, :org_id, :scope, :use_pkce
 
       def initialize(**args)
         @issuer = args[:issuer]
@@ -15,6 +15,7 @@ module OmniAuth
         @client_secret = args[:client_secret]
         @org_id = args[:org_id]
         @scope = args[:scope]
+        @use_pkce = args[:use_pkce]
       end
 
       def is_confidential?
