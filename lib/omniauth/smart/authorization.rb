@@ -11,12 +11,16 @@ module OmniAuth
         @token_url = token_url
       end
 
-      def exchange_code_for_token(client, code, redirect_uri)
+      def exchange_code_for_token(client, code, redirect_uri, code_verifier = nil)
         data = {
-            code: code,
-            grant_type: 'authorization_code',
-            redirect_uri: redirect_uri
+          code: code,
+          grant_type: 'authorization_code',
+          redirect_uri: redirect_uri
         }
+
+        # Include the code verifier if provided
+        data[:code_verifier] = code_verifier if code_verifier
+
         if client.is_public?
           data["client_id"] = client.client_id
         end

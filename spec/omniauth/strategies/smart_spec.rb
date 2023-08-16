@@ -62,7 +62,15 @@ describe OmniAuth::Strategies::Smart do
         enable :sessions
       end
       use OmniAuth::Builder do
-        provider :smart, backend: OmniAuth::Smart::BackendArray.new([OmniAuth::Smart::Client.new(issuer: A_CLIENT_ISSUER, client_id: "CLIENT_ID", client_secret: "CLIENT_SECRET", org_id: "ORG_ID")])
+        provider :smart, backend: OmniAuth::Smart::BackendArray.new(
+          [OmniAuth::Smart::Client.new(
+            issuer: A_CLIENT_ISSUER,
+            client_id: "CLIENT_ID",
+            client_secret: "CLIENT_SECRET",
+            org_id: "ORG_ID",
+            use_pkce: RSpec.current_example.metadata[:use_pkce]
+          )]
+        )
       end
       get "/auth/smart/callback" do
         MultiJson.encode(request.env["omniauth.auth"])
@@ -100,7 +108,7 @@ describe OmniAuth::Strategies::Smart do
     end
   end
 
-  describe "smart" do
+  describe "smart", use_pkce: false do
 
     def stub_launch
       stub_request(:get, "#{A_CLIENT_ISSUER}/metadata").to_return(
@@ -224,6 +232,51 @@ END_TEXT
           expect(parsed_body['extra']['practitioner_id']).to eq(practitioner_id)
           expect(parsed_body['extra']['fhir_user_uri']).to eq(fhir_user)
           expect(parsed_body['credentials']['id_token']).to eq(encoded_id_token)
+        end
+      end
+    end
+
+    describe "PKCE", use_pkce: true do
+      context "launch" do
+        before do
+          stub_launch
+        end
+
+        it 'generates and stores code verifier in the session' do
+          get "/auth/smart?iss=#{URI.encode_www_form_component(A_CLIENT_ISSUER)}"
+          expect(last_request.session['omniauth.pkce.code_verifier']).to_not be_nil
+        end
+
+        it 'includes code challenge in the authorization redirect' do
+          get "/auth/smart?iss=#{URI.encode_www_form_component(A_CLIENT_ISSUER)}"
+          expect(last_response.location).to match /code_challenge=/
+          expect(last_response.location).to match /code_challenge_method=S256/
+        end
+      end
+
+      context "callback" do
+        before do
+          stub_launch
+          stub_authorization
+        end
+
+        it 'exchanges the code and code verifier for a token' do
+          # Initial request to generate and store verifier in the session
+          get "/auth/smart?iss=#{URI.encode_www_form_component(A_CLIENT_ISSUER)}"
+
+          if last_response.location =~ /state=([^&]*)/
+            state_id = $1
+          end
+
+          # Stub token endpoint with PKCE
+          code_verifier = last_request.session['omniauth.pkce.code_verifier']
+
+          # You might want to stub the token endpoint taking into account the code verifier to validate the exchange process. This might require mocking external services or methods.
+
+          get "/auth/smart/callback?code=1234&state=#{state_id}"
+          expect(last_response.status).to be 200
+          expect(last_response.body).to match /SUBJECT/
+          expect(last_response.body).to match /ACCESS TOKEN/
         end
       end
     end
