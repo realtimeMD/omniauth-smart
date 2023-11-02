@@ -5,10 +5,10 @@
 module OmniAuth
   module Smart
     class Backend
-      class AbstractMethodError < Exception; end;
+      class AbstractMethodError < Exception; end
 
       # Returns an OmniauthSmartClient if found, otherwise nil
-      def find_by_issuer(issuer)
+      def find_by_issuer(issuer, params: nil)
         raise AbstractMethodError.new("You need to implement find_by_issuer in your subclass")
       end
     end
@@ -20,7 +20,7 @@ module OmniAuth
         @clients = array_of_clients
       end
 
-      def find_by_issuer(issuer)
+      def find_by_issuer(issuer, ...)
         @clients.find {|client| client.issuer == issuer}
       end
     end

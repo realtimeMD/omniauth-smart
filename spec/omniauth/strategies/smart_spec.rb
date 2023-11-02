@@ -132,6 +132,20 @@ describe OmniAuth::Strategies::Smart do
         expect(last_response.location).to include 'Unknown+issuer'
       end
 
+      it 'passes the request parameters to the backend if provided' do
+        blah = rand(1..99)
+        # This is crusty but verifies that the params are passed through
+        expect_any_instance_of(OmniAuth::Smart::BackendArray).to(
+          receive(:find_by_issuer).with(NOT_A_CLIENT_ISSUER, params: { 'blah' => blah.to_s }).and_call_original
+        )
+
+        get "/auth/smart?iss=#{NOT_A_CLIENT_ISSUER}&blah=#{blah}"
+
+        expect(last_response.status).to eq(302)
+        expect(last_response.location).to include 'failure'
+        expect(last_response.location).to include 'Unknown+issuer'
+      end
+
       it 'redirects to emr authentication server' do
         stub_launch
         get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
@@ -166,9 +180,11 @@ END_TEXT
 
     describe "callback" do
       it 'requests a token' do
+        blah = rand(1..99)
+
         stub_launch
         stub_authorization
-        get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}"
+        get "/auth/smart?iss=#{CGI.escape(A_CLIENT_ISSUER)}&blah=#{blah}"
         expect(last_response.status).to eq(302)
         expect(last_response.location).to match /my-server.org\/authorize/
 
@@ -176,6 +192,11 @@ END_TEXT
           state_id = $1
         end
         expect(state_id).to_not be_nil
+
+        # This is crusty but verifies that the params are saved in the session
+        expect_any_instance_of(OmniAuth::Smart::BackendArray).to(
+          receive(:find_by_issuer).with(A_CLIENT_ISSUER, params: { 'blah' => blah.to_s }).and_call_original
+        )
 
         get "/auth/smart/callback?code=1234&state=#{state_id}"
         expect(last_response.status).to be 200
