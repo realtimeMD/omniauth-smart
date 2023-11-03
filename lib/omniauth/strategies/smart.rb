@@ -42,6 +42,8 @@ module OmniAuth
     class Smart
       include OmniAuth::Strategy
 
+      SETUP_PARAMS_SESSION_KEY = 'omniauth.setup.params'
+
       option :backend, nil
       option :default_scope, "patient/Patient.read user/Practitioner.read launch openid profile online_scope fhirUser"
 
@@ -53,8 +55,10 @@ module OmniAuth
           log :error, "No issuer specified"
           fail! "Unknown issuer. Is your organization configured correctly?"
         else
-          client = options[:backend].find_by_issuer(issuer)
+          other_params = request.params.except('iss', 'launch', :iss, :launch)
+          client = options[:backend].find_by_issuer(issuer, params: other_params)
           if client
+            session[SETUP_PARAMS_SESSION_KEY] = other_params
             if client.use_pkce
               verifier = generate_code_verifier
               challenge = generate_code_challenge(verifier)
@@ -67,7 +71,7 @@ module OmniAuth
               redirect smart_url_for(client)
             end
           else
-            log :error, "Unknown issuer #{issuer}"
+            log :error, "Unknown issuer: '#{issuer}' with params: #{other_params.inspect}"
             fail! "Unknown issuer."
           end
         end
@@ -82,8 +86,9 @@ module OmniAuth
           return fail!("No smart client")
         end
 
-        @client = options[:backend].find_by_issuer(@issuer)
+        @client = options[:backend].find_by_issuer(@issuer, params: session[SETUP_PARAMS_SESSION_KEY])
         unless @client
+          log :error, "Unknown issuer: '#{@issuer}' with params: #{session[SETUP_PARAMS_SESSION_KEY].inspect}"
           return fail!("No backend configured for #{@issuer}")
         end
 
