@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rack-test", "~> 1.1"
   gem.add_development_dependency "rspec", "~> 3.6"
   gem.add_development_dependency "webmock", "~> 3.0"
-  gem.add_development_dependency "sinatra", "~> 2"
+  gem.add_development_dependency "sinatra", "~> 4"
   gem.add_development_dependency "rubocop", "~> 0.83.0"
   gem.add_development_dependency "rubocop-rails_config", "0.7.3"
   gem.add_development_dependency "rubocop-performance", "~> 1.5.0"
